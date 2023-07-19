@@ -6,6 +6,7 @@ Weekly assignemnts from the Computer Graphics course at Politecnico Di Milano a.
 Requirements:
 
 - Version of g++ that supports at least C++17
+- shaderc
 - GLFW3
 - Vulkan development headers
 - Vulkan validation layers
