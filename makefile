@@ -1,4 +1,4 @@
-SUBDIRS := A00
+SUBDIRS := A00 A01
 
 all: $(SUBDIRS)
 
