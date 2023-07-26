@@ -3,7 +3,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #define degToRad(angleInDegrees) ((angleInDegrees) * M_PI / 180.0f)
-#define i_mat(n_z, x, z) ((x) * (n_z) + (z))
+#define i_mat(stride, x, y) ((x) * (stride) + (y))
 
 using namespace glm;
 
@@ -60,30 +60,36 @@ void Assignment14::createFunctionMesh(std::vector<Vertex> &vDef, std::vector<uin
 	// The primitive built here is the surface y = sin(x) * cos(z) with -3 <= x <= 3 and -3 <= z <= 3.
   const int res = 40; // also stride
 
+  // +1 so that we can work with the full [-3, +3] range
+  const int res_corr = res + 1;
+
   float inc = 6.0f / ((float) res);
   float x_coord = -3.0f;
   float z_coord = -3.0f;
-  for (int x = 0; x < res; x++, x_coord += inc) {
-    for (int z = 0; z < res; z++, z_coord += inc) {
+  for (int x = 0; x < res_corr; x++) {
+    for (int z = 0; z < res_corr; z++) {
       float y = sin(x_coord) * cos(z_coord);
       vec3 du = vec3(1, cos(x_coord) * cos(z_coord), 0);
       vec3 dv = vec3(0, -sin(x_coord) * sin(z_coord), 1);
       vec3 n = - cross(du, dv);
 
       vDef.push_back({{x_coord, y, z_coord}, {n.x, n.y, n.z}});
+      z_coord += inc;
     }
+    x_coord += inc;
     z_coord = -3.0f;
   }
 
-  for (int x = 0; x < res - 1; x++) {
-    for (int z = 0; z < res - 1; z++) {
-      vIdx.push_back(i_mat(res, x, z));
-      vIdx.push_back(i_mat(res, x, z + 1));
-      vIdx.push_back(i_mat(res, x + 1, z));
+  // Matrix is in column major order with res_corr stride
+  for (int x = 0; x < res_corr - 1; x++) {
+    for (int z = 0; z < res_corr - 1; z++) {
+      vIdx.push_back(i_mat(res_corr, x, z));
+      vIdx.push_back(i_mat(res_corr, x, z + 1));
+      vIdx.push_back(i_mat(res_corr, x + 1, z));
 
-      vIdx.push_back(i_mat(res, x, z + 1));
-      vIdx.push_back(i_mat(res, x + 1, z));
-      vIdx.push_back(i_mat(res, x + 1, z + 1));
+      vIdx.push_back(i_mat(res_corr, x, z + 1));
+      vIdx.push_back(i_mat(res_corr, x + 1, z));
+      vIdx.push_back(i_mat(res_corr, x + 1, z + 1));
     }
   }
 }
@@ -107,7 +113,7 @@ void Assignment14::createCylinderMesh(std::vector<Vertex> &vDef, std::vector<uin
     vDef.push_back({{x, -1.0f, z}, {x, 0.0f, z}});            // 5 + i*4 = {5, 9, ...}
   }
   for (int i = 0; i < n; i++) {
-    int next = i < n - 1 ? i + 1 : 0; // wrap around index;
+    int next = i < n - 1 ? i + 1 : 0; // wrap around index
     vIdx.push_back(0); vIdx.push_back(2 + i * 4); vIdx.push_back(2 + next * 4);
     vIdx.push_back(1); vIdx.push_back(3 + i * 4); vIdx.push_back(3 + next * 4);
     vIdx.push_back(4 + i * 4); vIdx.push_back(5 + i * 4); vIdx.push_back(4 + next * 4);
